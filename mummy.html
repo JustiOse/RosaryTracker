@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosary Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #faf6f0;
+            --color-bg-accent: #f0e6d8;
+            --color-surface: #ffffff;
+            --color-primary: #1a4d8c;
+            --color-primary-dark: #0d2f5c;
+            --color-primary-light: #e8f0fa;
+            --color-gold: #c9a227;
+            --color-gold-light: #f5ecd4;
+            --color-success: #2e7d4a;
+            --color-success-light: #e6f4eb;
+            --color-text: #2c2416;
+            --color-text-muted: #6b5d4d;
+            --color-border: #e8dfd0;
+            --shadow-sm: 0 1px 3px rgba(44, 36, 22, 0.06);
+            --shadow-md: 0 4px 20px rgba(44, 36, 22, 0.08);
+            --shadow-lg: 0 8px 32px rgba(26, 77, 140, 0.12);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --font-display: 'Cormorant Garamond', Georgia, serif;
+            --font-body: 'Nunito', system-ui, sans-serif;
+            --progress-min-width: 5%;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            padding: 0 16px 40px;
+            max-width: 920px;
+            margin: 0 auto;
+            background: var(--color-bg);
+            background-image:
+                radial-gradient(ellipse at top, rgba(201, 162, 39, 0.08) 0%, transparent 55%),
+                radial-gradient(ellipse at bottom right, rgba(26, 77, 140, 0.05) 0%, transparent 50%);
+            color: var(--color-text);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            text-align: center;
+            padding: 28px 0 20px;
+        }
+
+        .mary-image-wrap {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        .mary-image-wrap::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-gold), var(--color-primary));
+            opacity: 0.35;
+            z-index: 0;
+        }
+
+        .mary-image {
+            position: relative;
+            z-index: 1;
+            width: 108px;
+            height: 108px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--color-surface);
+            box-shadow: var(--shadow-md);
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0 0 4px;
+            color: var(--color-primary-dark);
+            letter-spacing: 0.02em;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .intention-banner {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: 20px 24px;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .intention-banner::before {
+            content: '✦';
+            position: absolute;
+            top: 12px;
+            left: 20px;
+            font-size: 1.2rem;
+            opacity: 0.4;
+        }
+
+        .intention-banner::after {
+            content: '✦';
+            position: absolute;
+            bottom: 12px;
+            right: 20px;
+            font-size: 1.2rem;
+            opacity: 0.4;
+        }
+
+        .intention-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            opacity: 0.85;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .intention-text {
+            font-family: var(--font-display);
+            font-size: 1.65rem;
+            font-weight: 600;
+            font-style: italic;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .card {
+            background: var(--color-surface);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-card {
+            padding: 24px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .progress-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-primary-dark);
+            margin: 0;
+        }
+
+        .progress-percent {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .progress-bar-bg {
+            background: var(--color-bg-accent);
+            border-radius: 999px;
+            height: 14px;
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--color-gold) 0%, var(--color-success) 100%);
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: var(--progress-min-width);
+            box-shadow: 0 0 12px rgba(46, 125, 74, 0.35);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .stat-item {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 14px 10px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-item h3 {
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            line-height: 1.1;
+        }
+
+        .stat-item p {
+            margin: 6px 0 0;
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--color-primary-dark);
+            margin: 0 0 12px;
+            padding-left: 4px;
+        }
+
+        .dates-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .date-field {
+            background: var(--color-surface);
+            padding: 16px 18px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .date-field label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .date-field input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-family: var(--font-body);
+            color: var(--color-text);
+            background: var(--color-bg);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .date-field input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(26, 77, 140, 0.12);
+        }
+
+        .date-display {
+            margin: 0;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--color-text);
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+        }
+
+        .date-display.pending {
+            color: var(--color-text-muted);
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            background: var(--color-surface);
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--color-border);
+        }
+
+        .legend-box {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+        }
+
+        .legend-circle {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+            margin-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--color-surface);
+            min-width: 520px;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        th {
+            background: var(--color-primary);
+            color: white;
+            padding: 14px 8px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        th.litany-header {
+            background: var(--color-primary-dark);
+        }
+
+        td {
+            border-bottom: 1px solid var(--color-border);
+            padding: 10px 6px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        tbody tr:nth-child(even) td {
+            background: rgba(250, 246, 240, 0.6);
+        }
+
+        .round-num {
+            font-weight: 700;
+            background: var(--color-gold-light) !important;
+            color: var(--color-primary-dark);
+            width: 44px;
+            font-size: 0.95rem;
+        }
+
+        .mystery-cell {
+            cursor: default;
+        }
+
+        .checkbox-group {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            flex-wrap: wrap;
+        }
+
+        .checkbox {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            transition: transform 0.15s, background 0.2s, box-shadow 0.2s;
+            user-select: none;
+            font-weight: 700;
+            border: 2px solid transparent;
+        }
+
+        .checkbox.unchecked {
+            background: var(--color-bg-accent);
+            border-color: var(--color-border);
+            color: transparent;
+        }
+
+        .checkbox.checked {
+            background: var(--color-success);
+            border-color: var(--color-success);
+            color: white;
+            box-shadow: 0 2px 8px rgba(46, 125, 74, 0.35);
+        }
+
+        .checkbox:hover {
+            transform: scale(1.12);
+        }
+
+        .checkbox:active {
+            transform: scale(0.94);
+        }
+
+        .litany-cell {
+            background: var(--color-primary-light) !important;
+        }
+
+        .litany-checkbox {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.15s, background 0.2s, box-shadow 0.2s;
+            user-select: none;
+            font-weight: 700;
+            border: 2px solid var(--color-primary);
+        }
+
+        .litany-checkbox.unchecked {
+            background: white;
+            color: transparent;
+        }
+
+        .litany-checkbox.checked {
+            background: var(--color-primary);
+            color: white;
+            box-shadow: 0 2px 10px rgba(26, 77, 140, 0.35);
+        }
+
+        .litany-checkbox:hover {
+            transform: scale(1.1);
+        }
+
+        .rosary-count {
+            font-size: 0.68rem;
+            color: var(--color-text-muted);
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        .completed-row td {
+            background: var(--color-success-light) !important;
+        }
+
+        .completed-row .litany-cell {
+            background: #d4edda !important;
+        }
+
+        .completed-row .round-num {
+            background: #c8e6c9 !important;
+        }
+
+        .notes-container {
+            background: var(--color-surface);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+        }
+
+        .notes-container label {
+            display: block;
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--color-primary-dark);
+        }
+
+        .notes-container textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-family: var(--font-body);
+            resize: vertical;
+            min-height: 88px;
+            background: var(--color-bg);
+            color: var(--color-text);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .notes-container textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(26, 77, 140, 0.1);
+        }
+
+        .notes-container textarea::placeholder {
+            color: #a89888;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-family: var(--font-body);
+            transition: transform 0.15s, box-shadow 0.2s;
+            letter-spacing: 0.02em;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-export {
+            background: var(--color-primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(26, 77, 140, 0.3);
+        }
+
+        .btn-export:hover {
+            box-shadow: 0 6px 20px rgba(26, 77, 140, 0.4);
+        }
+
+        .btn-import {
+            background: var(--color-surface);
+            color: var(--color-primary);
+            border: 2px solid var(--color-primary);
+        }
+
+        .btn-import:hover {
+            background: var(--color-primary-light);
+        }
+
+        #importFile {
+            display: none;
+        }
+
+        .save-indicator {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--color-success);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            z-index: 1000;
+            box-shadow: 0 6px 24px rgba(46, 125, 74, 0.4);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s;
+            pointer-events: none;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 36px;
+            padding-top: 20px;
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+            font-style: italic;
+            font-family: var(--font-display);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0 10px 32px;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            .mary-image {
+                width: 88px;
+                height: 88px;
+            }
+
+            .intention-text {
+                font-size: 1.35rem;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stat-item h3 {
+                font-size: 1.45rem;
+            }
+
+            .dates-container {
+                grid-template-columns: 1fr;
+            }
+
+            th {
+                font-size: 0.62rem;
+                padding: 10px 4px;
+            }
+
+            .checkbox {
+                width: 20px;
+                height: 20px;
+                font-size: 10px;
+            }
+
+            .litany-checkbox {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+
+            .btn {
+                padding: 10px 18px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="mary-image-wrap">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Our_Lady_of_F%C3%A1tima.jpg/440px-Our_Lady_of_F%C3%A1tima.jpg" alt="Our Lady of Fatima" class="mary-image" onerror="this.parentElement.style.display='none'">
+        </div>
+        <h1>Rosary Tracker</h1>
+    </header>
+
+    <div class="intention-banner" aria-label="Prayer intention">
+        <p class="intention-label">Prayer Intention</p>
+        <p class="intention-text" id="intentionDisplay">Medicine for Mummy</p>
+        <input type="hidden" id="intention" value="Medicine for Mummy">
+    </div>
+
+    <section class="card progress-card" aria-label="Progress overview">
+        <div class="progress-header">
+            <h2 class="progress-title">Overall Progress</h2>
+            <span class="progress-percent" id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar" id="progressBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <div class="stats">
+            <div class="stat-item">
+                <h3 id="rosaryCount">0</h3>
+                <p>Rosaries / 100</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="mysteryCount">0</h3>
+                <p>Mysteries / 500</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="litanyCount">0</h3>
+                <p>Litanies / 25</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="roundCount">0</h3>
+                <p>Rounds / 25</p>
+            </div>
+        </div>
+    </section>
+
+    <h2 class="section-title">Dates</h2>
+    <div class="dates-container">
+        <div class="date-field">
+            <label>Start Date</label>
+            <p class="date-display" id="startDateDisplay">17 May 2026</p>
+            <input type="hidden" id="startDate" value="2026-05-17">
+        </div>
+        <div class="date-field">
+            <label>Completion Date</label>
+            <p class="date-display pending" id="endDateDisplay">Pending</p>
+            <input type="hidden" id="endDate">
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-box" style="background: var(--color-bg-accent); border: 1px solid var(--color-border);"></div>
+            <span>Pending</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-box" style="background: var(--color-success);"></div>
+            <span>Completed</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: var(--color-primary);"></div>
+            <span>Litany</span>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table id="trackerTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Joyful</th>
+                    <th>Luminous</th>
+                    <th>Sorrowful</th>
+                    <th>Glorious</th>
+                    <th class="litany-header">Litany</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="notes-container">
+        <label for="notes">Notes</label>
+        <textarea id="notes" placeholder="Prayer notes or reflections..." onchange="saveData()"></textarea>
+    </div>
+
+    <div class="buttons">
+        <button type="button" class="btn btn-export" onclick="exportData()">Export Backup</button>
+        <button type="button" class="btn btn-import" onclick="document.getElementById('importFile').click()">Import Backup</button>
+        <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+    </div>
+
+    <div class="save-indicator" id="saveIndicator" role="status">✓ Progress saved</div>
+
+    <footer class="footer">Offered with love for Mummy's healing</footer>
+
+    <script>
+        var TOTAL_ROUNDS = 25;
+        var MYSTERIES_PER_ROSARY = 5;
+        var TOTAL_ROSARIES = 100;
+        var ROSARY_TYPES = ['joyful', 'luminous', 'sorrowful', 'glorious'];
+        var STORAGE_KEY = 'rosaryTrackerMummy';
+        var DEFAULT_INTENTION = 'Medicine for Mummy';
+        var DEFAULT_START_DATE = '2026-05-17';
+        var CHECKMARK = '\u2713';
+
+        var data = {
+            checkboxes: {},
+            litany: {},
+            intention: DEFAULT_INTENTION,
+            startDate: DEFAULT_START_DATE,
+            endDate: '',
+            notes: ''
+        };
+
+        function init() {
+            loadData();
+            renderTable();
+            updateStats();
+        }
+
+        function renderTable() {
+            var tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            for (var round = 1; round <= TOTAL_ROUNDS; round++) {
+                var row = document.createElement('tr');
+                row.id = 'row-' + round;
+
+                var roundCell = document.createElement('td');
+                roundCell.className = 'round-num';
+                roundCell.textContent = round;
+                row.appendChild(roundCell);
+
+                for (var t = 0; t < ROSARY_TYPES.length; t++) {
+                    var type = ROSARY_TYPES[t];
+                    var cell = document.createElement('td');
+                    cell.className = 'mystery-cell';
+
+                    var checkboxContainer = document.createElement('div');
+                    checkboxContainer.className = 'checkbox-group';
+
+                    for (var m = 1; m <= MYSTERIES_PER_ROSARY; m++) {
+                        var checkbox = document.createElement('span');
+                        var key = round + '-' + type + '-' + m;
+                        checkbox.id = key;
+                        checkbox.setAttribute('data-key', key);
+                        checkbox.setAttribute('role', 'checkbox');
+                        checkbox.setAttribute('aria-checked', data.checkboxes[key] ? 'true' : 'false');
+                        checkbox.onclick = function() {
+                            toggleCheckbox(this.getAttribute('data-key'));
+                        };
+
+                        if (data.checkboxes[key]) {
+                            checkbox.className = 'checkbox checked';
+                            checkbox.textContent = CHECKMARK;
+                        } else {
+                            checkbox.className = 'checkbox unchecked';
+                            checkbox.textContent = '';
+                        }
+
+                        checkboxContainer.appendChild(checkbox);
+                    }
+
+                    var countDiv = document.createElement('div');
+                    countDiv.className = 'rosary-count';
+                    countDiv.id = 'count-' + round + '-' + type;
+                    countDiv.textContent = countCompletedMysteries(round, type) + '/5';
+
+                    cell.appendChild(checkboxContainer);
+                    cell.appendChild(countDiv);
+                    row.appendChild(cell);
+                }
+
+                var litanyCell = document.createElement('td');
+                litanyCell.className = 'litany-cell';
+
+                var litanyCheckbox = document.createElement('span');
+                var litanyKey = 'litany-' + round;
+                litanyCheckbox.id = litanyKey;
+                litanyCheckbox.setAttribute('data-round', round);
+                litanyCheckbox.setAttribute('role', 'checkbox');
+                litanyCheckbox.setAttribute('aria-checked', data.litany[round] ? 'true' : 'false');
+                litanyCheckbox.onclick = function() {
+                    toggleLitany(this.getAttribute('data-round'));
+                };
+
+                if (data.litany[round]) {
+                    litanyCheckbox.className = 'litany-checkbox checked';
+                    litanyCheckbox.textContent = CHECKMARK;
+                } else {
+                    litanyCheckbox.className = 'litany-checkbox unchecked';
+                    litanyCheckbox.textContent = '';
+                }
+
+                litanyCell.appendChild(litanyCheckbox);
+                row.appendChild(litanyCell);
+
+                tbody.appendChild(row);
+                updateRowStyle(round);
+            }
+        }
+
+        function toggleCheckbox(key) {
+            data.checkboxes[key] = !data.checkboxes[key];
+
+            var checkbox = document.getElementById(key);
+            checkbox.setAttribute('aria-checked', data.checkboxes[key] ? 'true' : 'false');
+            if (data.checkboxes[key]) {
+                checkbox.className = 'checkbox checked';
+                checkbox.textContent = CHECKMARK;
+            } else {
+                checkbox.className = 'checkbox unchecked';
+                checkbox.textContent = '';
+            }
+
+            var parts = key.split('-');
+            var round = parseInt(parts[0], 10);
+            var type = parts[1];
+
+            document.getElementById('count-' + round + '-' + type).textContent =
+                countCompletedMysteries(round, type) + '/5';
+
+            updateRowStyle(round);
+            updateStats();
+            saveData();
+        }
+
+        function toggleLitany(round) {
+            round = parseInt(round, 10);
+            data.litany[round] = !data.litany[round];
+
+            var litanyCheckbox = document.getElementById('litany-' + round);
+            litanyCheckbox.setAttribute('aria-checked', data.litany[round] ? 'true' : 'false');
+            if (data.litany[round]) {
+                litanyCheckbox.className = 'litany-checkbox checked';
+                litanyCheckbox.textContent = CHECKMARK;
+            } else {
+                litanyCheckbox.className = 'litany-checkbox unchecked';
+                litanyCheckbox.textContent = '';
+            }
+
+            updateRowStyle(round);
+            updateStats();
+            saveData();
+        }
+
+        function countCompletedMysteries(round, type) {
+            var count = 0;
+            for (var m = 1; m <= MYSTERIES_PER_ROSARY; m++) {
+                if (data.checkboxes[round + '-' + type + '-' + m]) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        function isRosaryComplete(round, type) {
+            return countCompletedMysteries(round, type) === MYSTERIES_PER_ROSARY;
+        }
+
+        function isRoundComplete(round) {
+            for (var t = 0; t < ROSARY_TYPES.length; t++) {
+                if (!isRosaryComplete(round, ROSARY_TYPES[t])) {
+                    return false;
+                }
+            }
+            return !!data.litany[round];
+        }
+
+        function updateRowStyle(round) {
+            var row = document.getElementById('row-' + round);
+            if (isRoundComplete(round)) {
+                row.classList.add('completed-row');
+            } else {
+                row.classList.remove('completed-row');
+            }
+        }
+
+        var MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        function formatLocalDate(date) {
+            var month = date.getMonth() + 1;
+            var day = date.getDate();
+            return date.getFullYear() + '-' +
+                (month < 10 ? '0' : '') + month + '-' +
+                (day < 10 ? '0' : '') + day;
+        }
+
+        function formatDisplayDate(isoDate) {
+            var parts = isoDate.split('-');
+            if (parts.length !== 3) {
+                return isoDate;
+            }
+            var day = parseInt(parts[2], 10);
+            var monthIndex = parseInt(parts[1], 10) - 1;
+            return day + ' ' + MONTH_NAMES[monthIndex] + ' ' + parts[0];
+        }
+
+        function setStartDate() {
+            document.getElementById('startDate').value = DEFAULT_START_DATE;
+            document.getElementById('startDateDisplay').textContent = formatDisplayDate(DEFAULT_START_DATE);
+            data.startDate = DEFAULT_START_DATE;
+        }
+
+        function setCompletionDate(isoDate) {
+            var hiddenInput = document.getElementById('endDate');
+            var display = document.getElementById('endDateDisplay');
+            hiddenInput.value = isoDate || '';
+            data.endDate = isoDate || '';
+
+            if (isoDate) {
+                display.textContent = formatDisplayDate(isoDate);
+                display.classList.remove('pending');
+            } else {
+                display.textContent = 'Pending';
+                display.classList.add('pending');
+            }
+        }
+
+        function maybeAutoSetCompletionDate(totalRosaries) {
+            if (totalRosaries !== TOTAL_ROSARIES) {
+                return false;
+            }
+            if (data.endDate || document.getElementById('endDate').value) {
+                return false;
+            }
+            setCompletionDate(formatLocalDate(new Date()));
+            return true;
+        }
+
+        function updateStats() {
+            var totalMysteries = 0;
+            var totalRosaries = 0;
+            var totalRounds = 0;
+            var totalLitanies = 0;
+
+            for (var round = 1; round <= TOTAL_ROUNDS; round++) {
+                var roundComplete = true;
+
+                for (var t = 0; t < ROSARY_TYPES.length; t++) {
+                    var type = ROSARY_TYPES[t];
+                    var completed = countCompletedMysteries(round, type);
+                    totalMysteries += completed;
+
+                    if (completed === MYSTERIES_PER_ROSARY) {
+                        totalRosaries++;
+                    } else {
+                        roundComplete = false;
+                    }
+                }
+
+                if (data.litany[round]) {
+                    totalLitanies++;
+                } else {
+                    roundComplete = false;
+                }
+
+                if (roundComplete) {
+                    totalRounds++;
+                }
+            }
+
+            document.getElementById('mysteryCount').textContent = totalMysteries;
+            document.getElementById('rosaryCount').textContent = totalRosaries;
+            document.getElementById('litanyCount').textContent = totalLitanies;
+            document.getElementById('roundCount').textContent = totalRounds;
+
+            var percentage = Math.round((totalRosaries / TOTAL_ROSARIES) * 100);
+            var progressBar = document.getElementById('progressBar');
+            progressBar.style.width = Math.max(percentage, 5) + '%';
+            progressBar.setAttribute('aria-valuenow', String(percentage));
+            document.getElementById('progressPercent').textContent = percentage + '%';
+
+            if (maybeAutoSetCompletionDate(totalRosaries)) {
+                saveData();
+            }
+        }
+
+        function saveData() {
+            data.intention = DEFAULT_INTENTION;
+            data.startDate = DEFAULT_START_DATE;
+            data.endDate = document.getElementById('endDate').value || data.endDate;
+            data.notes = document.getElementById('notes').value;
+
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (e) {
+                console.log('Could not save to localStorage');
+            }
+
+            var indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(function() {
+                indicator.classList.remove('show');
+            }, 1800);
+        }
+
+        function loadData() {
+            try {
+                var saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    data = JSON.parse(saved);
+                    if (!data.litany) {
+                        data.litany = {};
+                    }
+                    setCompletionDate(data.endDate || '');
+                    document.getElementById('notes').value = data.notes || '';
+                }
+                setStartDate();
+                document.getElementById('intention').value = DEFAULT_INTENTION;
+                document.getElementById('intentionDisplay').textContent = DEFAULT_INTENTION;
+            } catch (e) {
+                console.log('Could not load from localStorage');
+            }
+        }
+
+        function exportData() {
+            var exportObj = {
+                checkboxes: data.checkboxes,
+                litany: data.litany,
+                intention: DEFAULT_INTENTION,
+                startDate: data.startDate,
+                endDate: data.endDate,
+                notes: data.notes,
+                exportDate: new Date().toISOString(),
+                stats: {
+                    rosaries: document.getElementById('rosaryCount').textContent,
+                    mysteries: document.getElementById('mysteryCount').textContent,
+                    litanies: document.getElementById('litanyCount').textContent,
+                    rounds: document.getElementById('roundCount').textContent
+                }
+            };
+
+            var dataStr = JSON.stringify(exportObj, null, 2);
+            var blob = new Blob([dataStr], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'mummy-rosary-tracker-backup.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    var imported = JSON.parse(e.target.result);
+                    if (imported.checkboxes) {
+                        data.checkboxes = imported.checkboxes;
+                        data.litany = imported.litany || {};
+                        data.intention = DEFAULT_INTENTION;
+                        data.endDate = imported.endDate || '';
+                        data.notes = imported.notes || '';
+
+                        setStartDate();
+                        setCompletionDate(data.endDate);
+                        document.getElementById('notes').value = data.notes;
+
+                        renderTable();
+                        updateStats();
+                        saveData();
+
+                        alert('Data imported successfully!');
+                    } else {
+                        alert('Invalid file format');
+                    }
+                } catch (err) {
+                    alert('Error reading file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        init();
+    </script>
+</body>
+</html>
